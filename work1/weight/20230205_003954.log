@@ -1,0 +1,1139 @@
+2023/02/05 00:40:02 - mmengine - INFO - 
+------------------------------------------------------------
+System environment:
+    sys.platform: win32
+    Python: 3.8.16 | packaged by conda-forge | (default, Feb  1 2023, 15:53:35) [MSC v.1929 64 bit (AMD64)]
+    CUDA available: True
+    numpy_random_seed: 1403749851
+    GPU 0: NVIDIA GeForce RTX 3060
+    CUDA_HOME: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3
+    NVCC: Cuda compilation tools, release 11.3, V11.3.58
+    MSVC: 用于 x64 的 Microsoft (R) C/C++ 优化编译器 19.29.30143 版
+    GCC: n/a
+    PyTorch: 1.8.0
+    PyTorch compiling details: PyTorch built with:
+  - C++ Version: 199711
+  - MSVC 192829337
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191125 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v1.7.0 (Git Hash 7aed236906b1f7a05c0917e5257a1af05e9ff683)
+  - OpenMP 2019
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.1
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_61,code=sm_61;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=compute_37
+  - CuDNN 8.0.5
+  - Magma 2.5.4
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.1, CUDNN_VERSION=8.0.5, CXX_COMPILER=C:/cb/pytorch_1000000000000/work/tmp_bin/sccache-cl.exe, CXX_FLAGS=/DWIN32 /D_WINDOWS /GR /EHsc /w /bigobj -DUSE_PTHREADPOOL -openmp:experimental -DNDEBUG -DUSE_FBGEMM -DUSE_XNNPACK, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.8.0, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=OFF, USE_NNPACK=OFF, USE_OPENMP=ON, 
+
+    TorchVision: 0.9.0
+    OpenCV: 4.7.0
+    MMEngine: 0.5.0
+
+Runtime environment:
+    cudnn_benchmark: False
+    mp_cfg: {'mp_start_method': 'fork', 'opencv_num_threads': 0}
+    dist_cfg: {'backend': 'nccl'}
+    seed: None
+    deterministic: False
+    Distributed launcher: none
+    Distributed training: False
+    GPU number: 1
+------------------------------------------------------------
+
+2023/02/05 00:40:02 - mmengine - INFO - Config:
+model = dict(
+    type='ImageClassifier',
+    backbone=dict(
+        type='MobileNetV3',
+        arch='small',
+        init_cfg=dict(
+            type='Pretrained',
+            checkpoint=
+            'https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth',
+            prefix='backbone')),
+    neck=dict(type='GlobalAveragePooling'),
+    head=dict(
+        type='StackedLinearClsHead',
+        num_classes=5,
+        in_channels=576,
+        mid_channels=[1024],
+        dropout_rate=0.2,
+        act_cfg=dict(type='HSwish'),
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        init_cfg=dict(
+            type='Normal', layer='Linear', mean=0.0, std=0.01, bias=0.0),
+        topk=(1, )))
+dataset_type = 'CustomDataset'
+data_preprocessor = dict(
+    num_classes=5,
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    to_rgb=True)
+bgr_mean = [103.53, 116.28, 123.675]
+bgr_std = [57.375, 57.12, 58.395]
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='RandomResizedCrop', scale=224, backend='pillow'),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(
+        type='AutoAugment',
+        policies='imagenet',
+        hparams=dict(pad_val=[104, 116, 124])),
+    dict(
+        type='RandomErasing',
+        erase_prob=0.2,
+        mode='rand',
+        min_area_ratio=0.02,
+        max_area_ratio=0.3333333333333333,
+        fill_color=[103.53, 116.28, 123.675],
+        fill_std=[57.375, 57.12, 58.395]),
+    dict(type='PackClsInputs')
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='ResizeEdge', scale=256, edge='short', backend='pillow'),
+    dict(type='CenterCrop', crop_size=224),
+    dict(type='PackClsInputs')
+]
+train_dataloader = dict(
+    pin_memory=True,
+    persistent_workers=True,
+    collate_fn=dict(type='default_collate'),
+    batch_size=32,
+    num_workers=2,
+    dataset=dict(
+        type='CustomDataset',
+        data_root='data',
+        ann_file='',
+        data_prefix='train',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='RandomResizedCrop', scale=224, backend='pillow'),
+            dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+            dict(
+                type='AutoAugment',
+                policies='imagenet',
+                hparams=dict(pad_val=[104, 116, 124])),
+            dict(
+                type='RandomErasing',
+                erase_prob=0.2,
+                mode='rand',
+                min_area_ratio=0.02,
+                max_area_ratio=0.3333333333333333,
+                fill_color=[103.53, 116.28, 123.675],
+                fill_std=[57.375, 57.12, 58.395]),
+            dict(type='PackClsInputs')
+        ]),
+    sampler=dict(type='DefaultSampler', shuffle=True))
+val_dataloader = dict(
+    pin_memory=True,
+    persistent_workers=True,
+    collate_fn=dict(type='default_collate'),
+    batch_size=32,
+    num_workers=2,
+    dataset=dict(
+        type='CustomDataset',
+        data_root='data',
+        ann_file='',
+        data_prefix='val',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='ResizeEdge', scale=256, edge='short', backend='pillow'),
+            dict(type='CenterCrop', crop_size=224),
+            dict(type='PackClsInputs')
+        ]),
+    sampler=dict(type='DefaultSampler', shuffle=False))
+val_evaluator = dict(type='Accuracy', topk=(1, ))
+test_dataloader = dict(
+    pin_memory=True,
+    persistent_workers=True,
+    collate_fn=dict(type='default_collate'),
+    batch_size=128,
+    num_workers=5,
+    dataset=dict(
+        type='ImageNet',
+        data_root='data/imagenet',
+        ann_file='meta/val.txt',
+        data_prefix='val',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='ResizeEdge', scale=256, edge='short', backend='pillow'),
+            dict(type='CenterCrop', crop_size=224),
+            dict(type='PackClsInputs')
+        ]),
+    sampler=dict(type='DefaultSampler', shuffle=False))
+test_evaluator = dict(type='Accuracy', topk=(1, 5))
+default_scope = 'mmcls'
+default_hooks = dict(
+    timer=dict(type='IterTimerHook'),
+    logger=dict(type='LoggerHook', interval=10),
+    param_scheduler=dict(type='ParamSchedulerHook'),
+    checkpoint=dict(type='CheckpointHook', interval=10),
+    sampler_seed=dict(type='DistSamplerSeedHook'),
+    visualization=dict(type='VisualizationHook', enable=False))
+env_cfg = dict(
+    cudnn_benchmark=False,
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
+    dist_cfg=dict(backend='nccl'))
+vis_backends = [dict(type='LocalVisBackend')]
+visualizer = dict(
+    type='ClsVisualizer', vis_backends=[dict(type='LocalVisBackend')])
+log_level = 'INFO'
+load_from = None
+resume = False
+randomness = dict(seed=None, deterministic=False)
+optim_wrapper = dict(
+    optimizer=dict(
+        type='RMSprop',
+        lr=0.064,
+        alpha=0.9,
+        momentum=0.9,
+        eps=0.0316,
+        weight_decay=1e-05))
+param_scheduler = dict(type='StepLR', by_epoch=True, step_size=2, gamma=0.973)
+train_cfg = dict(by_epoch=True, max_epochs=50, val_interval=5)
+val_cfg = dict()
+test_cfg = dict()
+auto_scale_lr = dict(base_batch_size=1024, enable=True)
+launcher = 'none'
+work_dir = './work_dirs\\mobilenet-v3-small-flowers'
+
+2023/02/05 00:40:02 - mmengine - WARNING - The "visualizer" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:02 - mmengine - WARNING - The "vis_backend" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:03 - mmengine - WARNING - The "model" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:05 - mmengine - INFO - Distributed training is not used, all SyncBatchNorm (SyncBN) layers in the model will be automatically reverted to BatchNormXd layers if they are used.
+2023/02/05 00:40:05 - mmengine - WARNING - The "hook" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:05 - mmengine - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+before_train:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) DistSamplerSeedHook                
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_train_iter:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(BELOW_NORMAL) LoggerHook                         
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) IterTimerHook                      
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+before_val_iter:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) VisualizationHook                  
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_val_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(BELOW_NORMAL) LoggerHook                         
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_test_epoch:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+before_test_iter:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_test_iter:
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) VisualizationHook                  
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_test_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_run:
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+2023/02/05 00:40:05 - mmengine - WARNING - The "dataset" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:05 - mmengine - WARNING - The "transform" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:05 - mmengine - WARNING - The "data sampler" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:05 - mmengine - WARNING - The "optimizer wrapper constructor" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:05 - mmengine - WARNING - The "optimizer" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:05 - mmengine - WARNING - The "optimizer_wrapper" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:05 - mmengine - INFO - LR is set based on batch size of 1024 and the current batch size is 32. Scaling the original LR by 0.03125.
+2023/02/05 00:40:05 - mmengine - WARNING - The "parameter scheduler" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:05 - mmengine - WARNING - The "metric" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:05 - mmengine - WARNING - The "weight initializer" registry in mmcls did not set import location. Fallback to call `mmcls.utils.register_all_modules` instead.
+2023/02/05 00:40:05 - mmengine - INFO - load backbone in model from: https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth
+Name of parameter - Initialization information
+
+backbone.layer0.conv.weight - torch.Size([16, 3, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer0.bn.weight - torch.Size([16]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer0.bn.bias - torch.Size([16]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer1.depthwise_conv.conv.weight - torch.Size([16, 1, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer1.depthwise_conv.bn.weight - torch.Size([16]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer1.depthwise_conv.bn.bias - torch.Size([16]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer1.se.conv1.conv.weight - torch.Size([8, 16, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer1.se.conv1.conv.bias - torch.Size([8]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer1.se.conv2.conv.weight - torch.Size([16, 8, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer1.se.conv2.conv.bias - torch.Size([16]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer1.linear_conv.conv.weight - torch.Size([16, 16, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer1.linear_conv.bn.weight - torch.Size([16]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer1.linear_conv.bn.bias - torch.Size([16]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer2.expand_conv.conv.weight - torch.Size([72, 16, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer2.expand_conv.bn.weight - torch.Size([72]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer2.expand_conv.bn.bias - torch.Size([72]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer2.depthwise_conv.conv.weight - torch.Size([72, 1, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer2.depthwise_conv.bn.weight - torch.Size([72]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer2.depthwise_conv.bn.bias - torch.Size([72]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer2.linear_conv.conv.weight - torch.Size([24, 72, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer2.linear_conv.bn.weight - torch.Size([24]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer2.linear_conv.bn.bias - torch.Size([24]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer3.expand_conv.conv.weight - torch.Size([88, 24, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer3.expand_conv.bn.weight - torch.Size([88]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer3.expand_conv.bn.bias - torch.Size([88]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer3.depthwise_conv.conv.weight - torch.Size([88, 1, 3, 3]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer3.depthwise_conv.bn.weight - torch.Size([88]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer3.depthwise_conv.bn.bias - torch.Size([88]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer3.linear_conv.conv.weight - torch.Size([24, 88, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer3.linear_conv.bn.weight - torch.Size([24]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer3.linear_conv.bn.bias - torch.Size([24]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.expand_conv.conv.weight - torch.Size([96, 24, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.expand_conv.bn.weight - torch.Size([96]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.expand_conv.bn.bias - torch.Size([96]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.depthwise_conv.conv.weight - torch.Size([96, 1, 5, 5]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.depthwise_conv.bn.weight - torch.Size([96]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.depthwise_conv.bn.bias - torch.Size([96]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.se.conv1.conv.weight - torch.Size([24, 96, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.se.conv1.conv.bias - torch.Size([24]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.se.conv2.conv.weight - torch.Size([96, 24, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.se.conv2.conv.bias - torch.Size([96]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.linear_conv.conv.weight - torch.Size([40, 96, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.linear_conv.bn.weight - torch.Size([40]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer4.linear_conv.bn.bias - torch.Size([40]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.expand_conv.conv.weight - torch.Size([240, 40, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.expand_conv.bn.weight - torch.Size([240]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.expand_conv.bn.bias - torch.Size([240]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.depthwise_conv.conv.weight - torch.Size([240, 1, 5, 5]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.depthwise_conv.bn.weight - torch.Size([240]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.depthwise_conv.bn.bias - torch.Size([240]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.se.conv1.conv.weight - torch.Size([64, 240, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.se.conv1.conv.bias - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.se.conv2.conv.weight - torch.Size([240, 64, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.se.conv2.conv.bias - torch.Size([240]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.linear_conv.conv.weight - torch.Size([40, 240, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.linear_conv.bn.weight - torch.Size([40]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer5.linear_conv.bn.bias - torch.Size([40]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.expand_conv.conv.weight - torch.Size([240, 40, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.expand_conv.bn.weight - torch.Size([240]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.expand_conv.bn.bias - torch.Size([240]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.depthwise_conv.conv.weight - torch.Size([240, 1, 5, 5]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.depthwise_conv.bn.weight - torch.Size([240]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.depthwise_conv.bn.bias - torch.Size([240]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.se.conv1.conv.weight - torch.Size([64, 240, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.se.conv1.conv.bias - torch.Size([64]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.se.conv2.conv.weight - torch.Size([240, 64, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.se.conv2.conv.bias - torch.Size([240]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.linear_conv.conv.weight - torch.Size([40, 240, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.linear_conv.bn.weight - torch.Size([40]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer6.linear_conv.bn.bias - torch.Size([40]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.expand_conv.conv.weight - torch.Size([120, 40, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.expand_conv.bn.weight - torch.Size([120]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.expand_conv.bn.bias - torch.Size([120]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.depthwise_conv.conv.weight - torch.Size([120, 1, 5, 5]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.depthwise_conv.bn.weight - torch.Size([120]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.depthwise_conv.bn.bias - torch.Size([120]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.se.conv1.conv.weight - torch.Size([32, 120, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.se.conv1.conv.bias - torch.Size([32]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.se.conv2.conv.weight - torch.Size([120, 32, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.se.conv2.conv.bias - torch.Size([120]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.linear_conv.conv.weight - torch.Size([48, 120, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.linear_conv.bn.weight - torch.Size([48]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer7.linear_conv.bn.bias - torch.Size([48]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.expand_conv.conv.weight - torch.Size([144, 48, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.expand_conv.bn.weight - torch.Size([144]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.expand_conv.bn.bias - torch.Size([144]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.depthwise_conv.conv.weight - torch.Size([144, 1, 5, 5]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.depthwise_conv.bn.weight - torch.Size([144]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.depthwise_conv.bn.bias - torch.Size([144]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.se.conv1.conv.weight - torch.Size([40, 144, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.se.conv1.conv.bias - torch.Size([40]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.se.conv2.conv.weight - torch.Size([144, 40, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.se.conv2.conv.bias - torch.Size([144]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.linear_conv.conv.weight - torch.Size([48, 144, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.linear_conv.bn.weight - torch.Size([48]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer8.linear_conv.bn.bias - torch.Size([48]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.expand_conv.conv.weight - torch.Size([288, 48, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.expand_conv.bn.weight - torch.Size([288]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.expand_conv.bn.bias - torch.Size([288]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.depthwise_conv.conv.weight - torch.Size([288, 1, 5, 5]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.depthwise_conv.bn.weight - torch.Size([288]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.depthwise_conv.bn.bias - torch.Size([288]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.se.conv1.conv.weight - torch.Size([72, 288, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.se.conv1.conv.bias - torch.Size([72]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.se.conv2.conv.weight - torch.Size([288, 72, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.se.conv2.conv.bias - torch.Size([288]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.linear_conv.conv.weight - torch.Size([96, 288, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.linear_conv.bn.weight - torch.Size([96]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer9.linear_conv.bn.bias - torch.Size([96]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.expand_conv.conv.weight - torch.Size([576, 96, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.expand_conv.bn.weight - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.expand_conv.bn.bias - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.depthwise_conv.conv.weight - torch.Size([576, 1, 5, 5]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.depthwise_conv.bn.weight - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.depthwise_conv.bn.bias - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.se.conv1.conv.weight - torch.Size([144, 576, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.se.conv1.conv.bias - torch.Size([144]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.se.conv2.conv.weight - torch.Size([576, 144, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.se.conv2.conv.bias - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.linear_conv.conv.weight - torch.Size([96, 576, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.linear_conv.bn.weight - torch.Size([96]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer10.linear_conv.bn.bias - torch.Size([96]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.expand_conv.conv.weight - torch.Size([576, 96, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.expand_conv.bn.weight - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.expand_conv.bn.bias - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.depthwise_conv.conv.weight - torch.Size([576, 1, 5, 5]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.depthwise_conv.bn.weight - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.depthwise_conv.bn.bias - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.se.conv1.conv.weight - torch.Size([144, 576, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.se.conv1.conv.bias - torch.Size([144]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.se.conv2.conv.weight - torch.Size([576, 144, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.se.conv2.conv.bias - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.linear_conv.conv.weight - torch.Size([96, 576, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.linear_conv.bn.weight - torch.Size([96]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer11.linear_conv.bn.bias - torch.Size([96]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer12.conv.weight - torch.Size([576, 96, 1, 1]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer12.bn.weight - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+backbone.layer12.bn.bias - torch.Size([576]): 
+PretrainedInit: load from https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth 
+
+head.layers.0.fc.weight - torch.Size([1024, 576]): 
+NormalInit: mean=0.0, std=0.01, bias=0.0 
+
+head.layers.0.fc.bias - torch.Size([1024]): 
+NormalInit: mean=0.0, std=0.01, bias=0.0 
+
+head.layers.1.fc.weight - torch.Size([5, 1024]): 
+NormalInit: mean=0.0, std=0.01, bias=0.0 
+
+head.layers.1.fc.bias - torch.Size([5]): 
+NormalInit: mean=0.0, std=0.01, bias=0.0 
+2023/02/05 00:40:06 - mmengine - INFO - Checkpoints will be saved to E:\winter\mmclassification\work_dirs\mobilenet-v3-small-flowers.
+2023/02/05 00:40:12 - mmengine - INFO - Epoch(train)  [1][10/72]  lr: 2.0000e-03  eta: 0:36:07  time: 0.6038  data_time: 0.2662  memory: 530  loss: 1.5525
+2023/02/05 00:40:13 - mmengine - INFO - Epoch(train)  [1][20/72]  lr: 2.0000e-03  eta: 0:21:08  time: 0.1049  data_time: 0.0407  memory: 530  loss: 1.0783
+2023/02/05 00:40:14 - mmengine - INFO - Epoch(train)  [1][30/72]  lr: 2.0000e-03  eta: 0:16:04  time: 0.1017  data_time: 0.0351  memory: 530  loss: 0.6445
+2023/02/05 00:40:15 - mmengine - INFO - Epoch(train)  [1][40/72]  lr: 2.0000e-03  eta: 0:13:27  time: 0.0965  data_time: 0.0286  memory: 530  loss: 0.6286
+2023/02/05 00:40:16 - mmengine - INFO - Epoch(train)  [1][50/72]  lr: 2.0000e-03  eta: 0:11:59  time: 0.1066  data_time: 0.0396  memory: 530  loss: 0.6716
+2023/02/05 00:40:17 - mmengine - INFO - Epoch(train)  [1][60/72]  lr: 2.0000e-03  eta: 0:11:00  time: 0.1062  data_time: 0.0373  memory: 530  loss: 0.7225
+2023/02/05 00:40:18 - mmengine - INFO - Epoch(train)  [1][70/72]  lr: 2.0000e-03  eta: 0:10:19  time: 0.1084  data_time: 0.0372  memory: 530  loss: 0.7615
+2023/02/05 00:40:18 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:40:19 - mmengine - INFO - Epoch(train)  [2][10/72]  lr: 2.0000e-03  eta: 0:09:58  time: 0.1559  data_time: 0.0702  memory: 530  loss: 0.6650
+2023/02/05 00:40:21 - mmengine - INFO - Epoch(train)  [2][20/72]  lr: 2.0000e-03  eta: 0:09:32  time: 0.1041  data_time: 0.0344  memory: 530  loss: 0.6493
+2023/02/05 00:40:22 - mmengine - INFO - Epoch(train)  [2][30/72]  lr: 2.0000e-03  eta: 0:09:09  time: 0.1019  data_time: 0.0260  memory: 530  loss: 0.6942
+2023/02/05 00:40:23 - mmengine - INFO - Epoch(train)  [2][40/72]  lr: 2.0000e-03  eta: 0:08:51  time: 0.1046  data_time: 0.0367  memory: 530  loss: 0.5821
+2023/02/05 00:40:24 - mmengine - INFO - Epoch(train)  [2][50/72]  lr: 2.0000e-03  eta: 0:08:36  time: 0.1065  data_time: 0.0368  memory: 530  loss: 0.6103
+2023/02/05 00:40:25 - mmengine - INFO - Epoch(train)  [2][60/72]  lr: 2.0000e-03  eta: 0:08:25  time: 0.1094  data_time: 0.0427  memory: 530  loss: 0.7868
+2023/02/05 00:40:26 - mmengine - INFO - Epoch(train)  [2][70/72]  lr: 2.0000e-03  eta: 0:08:14  time: 0.1084  data_time: 0.0338  memory: 530  loss: 0.6055
+2023/02/05 00:40:26 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:40:27 - mmengine - INFO - Epoch(train)  [3][10/72]  lr: 1.9460e-03  eta: 0:08:02  time: 0.1181  data_time: 0.0505  memory: 530  loss: 0.6036
+2023/02/05 00:40:28 - mmengine - INFO - Epoch(train)  [3][20/72]  lr: 1.9460e-03  eta: 0:07:54  time: 0.1043  data_time: 0.0400  memory: 530  loss: 0.4887
+2023/02/05 00:40:29 - mmengine - INFO - Epoch(train)  [3][30/72]  lr: 1.9460e-03  eta: 0:07:46  time: 0.1063  data_time: 0.0359  memory: 530  loss: 0.5181
+2023/02/05 00:40:30 - mmengine - INFO - Epoch(train)  [3][40/72]  lr: 1.9460e-03  eta: 0:07:39  time: 0.1058  data_time: 0.0354  memory: 530  loss: 0.5610
+2023/02/05 00:40:31 - mmengine - INFO - Epoch(train)  [3][50/72]  lr: 1.9460e-03  eta: 0:07:33  time: 0.1074  data_time: 0.0388  memory: 530  loss: 0.5651
+2023/02/05 00:40:32 - mmengine - INFO - Epoch(train)  [3][60/72]  lr: 1.9460e-03  eta: 0:07:27  time: 0.1039  data_time: 0.0339  memory: 530  loss: 0.5903
+2023/02/05 00:40:34 - mmengine - INFO - Epoch(train)  [3][70/72]  lr: 1.9460e-03  eta: 0:07:24  time: 0.1261  data_time: 0.0433  memory: 530  loss: 0.5649
+2023/02/05 00:40:34 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:40:35 - mmengine - INFO - Epoch(train)  [4][10/72]  lr: 1.9460e-03  eta: 0:07:20  time: 0.1275  data_time: 0.0531  memory: 530  loss: 0.5318
+2023/02/05 00:40:36 - mmengine - INFO - Epoch(train)  [4][20/72]  lr: 1.9460e-03  eta: 0:07:15  time: 0.1054  data_time: 0.0310  memory: 530  loss: 0.5320
+2023/02/05 00:40:37 - mmengine - INFO - Epoch(train)  [4][30/72]  lr: 1.9460e-03  eta: 0:07:11  time: 0.1091  data_time: 0.0383  memory: 530  loss: 0.5793
+2023/02/05 00:40:38 - mmengine - INFO - Epoch(train)  [4][40/72]  lr: 1.9460e-03  eta: 0:07:07  time: 0.1080  data_time: 0.0401  memory: 530  loss: 0.6107
+2023/02/05 00:40:39 - mmengine - INFO - Epoch(train)  [4][50/72]  lr: 1.9460e-03  eta: 0:07:04  time: 0.1160  data_time: 0.0393  memory: 530  loss: 0.5859
+2023/02/05 00:40:40 - mmengine - INFO - Epoch(train)  [4][60/72]  lr: 1.9460e-03  eta: 0:07:00  time: 0.1049  data_time: 0.0318  memory: 530  loss: 0.5121
+2023/02/05 00:40:42 - mmengine - INFO - Epoch(train)  [4][70/72]  lr: 1.9460e-03  eta: 0:06:58  time: 0.1184  data_time: 0.0505  memory: 530  loss: 0.6889
+2023/02/05 00:40:42 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:40:43 - mmengine - INFO - Epoch(train)  [5][10/72]  lr: 1.8935e-03  eta: 0:06:54  time: 0.1168  data_time: 0.0502  memory: 530  loss: 0.5620
+2023/02/05 00:40:44 - mmengine - INFO - Epoch(train)  [5][20/72]  lr: 1.8935e-03  eta: 0:06:50  time: 0.1003  data_time: 0.0255  memory: 530  loss: 0.5463
+2023/02/05 00:40:45 - mmengine - INFO - Epoch(train)  [5][30/72]  lr: 1.8935e-03  eta: 0:06:47  time: 0.1104  data_time: 0.0379  memory: 530  loss: 0.5369
+2023/02/05 00:40:46 - mmengine - INFO - Epoch(train)  [5][40/72]  lr: 1.8935e-03  eta: 0:06:45  time: 0.1155  data_time: 0.0409  memory: 530  loss: 0.5425
+2023/02/05 00:40:47 - mmengine - INFO - Epoch(train)  [5][50/72]  lr: 1.8935e-03  eta: 0:06:43  time: 0.1098  data_time: 0.0388  memory: 530  loss: 0.5548
+2023/02/05 00:40:48 - mmengine - INFO - Epoch(train)  [5][60/72]  lr: 1.8935e-03  eta: 0:06:40  time: 0.1119  data_time: 0.0397  memory: 530  loss: 0.4474
+2023/02/05 00:40:50 - mmengine - INFO - Epoch(train)  [5][70/72]  lr: 1.8935e-03  eta: 0:06:38  time: 0.1126  data_time: 0.0393  memory: 530  loss: 0.4740
+2023/02/05 00:40:50 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:40:53 - mmengine - INFO - Epoch(val)  [5][10/18]    eta: 0:00:02  time: 0.3203  data_time: 0.2935  memory: 530  
+2023/02/05 00:40:53 - mmengine - INFO - Epoch(val) [5][18/18]  accuracy/top1: 86.0140
+2023/02/05 00:40:54 - mmengine - INFO - Epoch(train)  [6][10/72]  lr: 1.8935e-03  eta: 0:06:35  time: 0.1174  data_time: 0.0441  memory: 530  loss: 0.4985
+2023/02/05 00:40:55 - mmengine - INFO - Epoch(train)  [6][20/72]  lr: 1.8935e-03  eta: 0:06:32  time: 0.0969  data_time: 0.0298  memory: 530  loss: 0.5094
+2023/02/05 00:40:56 - mmengine - INFO - Epoch(train)  [6][30/72]  lr: 1.8935e-03  eta: 0:06:28  time: 0.0991  data_time: 0.0326  memory: 530  loss: 0.4986
+2023/02/05 00:40:57 - mmengine - INFO - Epoch(train)  [6][40/72]  lr: 1.8935e-03  eta: 0:06:26  time: 0.1068  data_time: 0.0395  memory: 530  loss: 0.4853
+2023/02/05 00:40:59 - mmengine - INFO - Epoch(train)  [6][50/72]  lr: 1.8935e-03  eta: 0:06:24  time: 0.1062  data_time: 0.0345  memory: 530  loss: 0.3652
+2023/02/05 00:41:00 - mmengine - INFO - Epoch(train)  [6][60/72]  lr: 1.8935e-03  eta: 0:06:21  time: 0.1061  data_time: 0.0377  memory: 530  loss: 0.3781
+2023/02/05 00:41:01 - mmengine - INFO - Epoch(train)  [6][70/72]  lr: 1.8935e-03  eta: 0:06:19  time: 0.0999  data_time: 0.0334  memory: 530  loss: 0.4993
+2023/02/05 00:41:01 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:41:02 - mmengine - INFO - Epoch(train)  [7][10/72]  lr: 1.8423e-03  eta: 0:06:16  time: 0.1094  data_time: 0.0453  memory: 530  loss: 0.5342
+2023/02/05 00:41:03 - mmengine - INFO - Epoch(train)  [7][20/72]  lr: 1.8423e-03  eta: 0:06:14  time: 0.1035  data_time: 0.0368  memory: 530  loss: 0.4566
+2023/02/05 00:41:04 - mmengine - INFO - Epoch(train)  [7][30/72]  lr: 1.8423e-03  eta: 0:06:12  time: 0.1097  data_time: 0.0387  memory: 530  loss: 0.4074
+2023/02/05 00:41:05 - mmengine - INFO - Epoch(train)  [7][40/72]  lr: 1.8423e-03  eta: 0:06:10  time: 0.1095  data_time: 0.0384  memory: 530  loss: 0.4690
+2023/02/05 00:41:06 - mmengine - INFO - Epoch(train)  [7][50/72]  lr: 1.8423e-03  eta: 0:06:08  time: 0.1077  data_time: 0.0335  memory: 530  loss: 0.4277
+2023/02/05 00:41:07 - mmengine - INFO - Epoch(train)  [7][60/72]  lr: 1.8423e-03  eta: 0:06:06  time: 0.0986  data_time: 0.0319  memory: 530  loss: 0.4791
+2023/02/05 00:41:08 - mmengine - INFO - Epoch(train)  [7][70/72]  lr: 1.8423e-03  eta: 0:06:03  time: 0.0956  data_time: 0.0328  memory: 530  loss: 0.4336
+2023/02/05 00:41:08 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:41:09 - mmengine - INFO - Epoch(train)  [8][10/72]  lr: 1.8423e-03  eta: 0:06:01  time: 0.1117  data_time: 0.0431  memory: 530  loss: 0.4702
+2023/02/05 00:41:10 - mmengine - INFO - Epoch(train)  [8][20/72]  lr: 1.8423e-03  eta: 0:05:58  time: 0.0945  data_time: 0.0304  memory: 530  loss: 0.4698
+2023/02/05 00:41:11 - mmengine - INFO - Epoch(train)  [8][30/72]  lr: 1.8423e-03  eta: 0:05:56  time: 0.0976  data_time: 0.0365  memory: 530  loss: 0.5449
+2023/02/05 00:41:12 - mmengine - INFO - Epoch(train)  [8][40/72]  lr: 1.8423e-03  eta: 0:05:54  time: 0.0977  data_time: 0.0320  memory: 530  loss: 0.5495
+2023/02/05 00:41:13 - mmengine - INFO - Epoch(train)  [8][50/72]  lr: 1.8423e-03  eta: 0:05:52  time: 0.1105  data_time: 0.0398  memory: 530  loss: 0.5057
+2023/02/05 00:41:14 - mmengine - INFO - Epoch(train)  [8][60/72]  lr: 1.8423e-03  eta: 0:05:51  time: 0.1026  data_time: 0.0370  memory: 530  loss: 0.4862
+2023/02/05 00:41:16 - mmengine - INFO - Epoch(train)  [8][70/72]  lr: 1.8423e-03  eta: 0:05:50  time: 0.1256  data_time: 0.0448  memory: 530  loss: 0.4667
+2023/02/05 00:41:16 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:41:17 - mmengine - INFO - Epoch(train)  [9][10/72]  lr: 1.7926e-03  eta: 0:05:48  time: 0.1116  data_time: 0.0395  memory: 530  loss: 0.4754
+2023/02/05 00:41:18 - mmengine - INFO - Epoch(train)  [9][20/72]  lr: 1.7926e-03  eta: 0:05:46  time: 0.1013  data_time: 0.0347  memory: 530  loss: 0.4773
+2023/02/05 00:41:19 - mmengine - INFO - Epoch(train)  [9][30/72]  lr: 1.7926e-03  eta: 0:05:44  time: 0.1007  data_time: 0.0347  memory: 530  loss: 0.4295
+2023/02/05 00:41:20 - mmengine - INFO - Epoch(train)  [9][40/72]  lr: 1.7926e-03  eta: 0:05:42  time: 0.0979  data_time: 0.0338  memory: 530  loss: 0.3891
+2023/02/05 00:41:21 - mmengine - INFO - Epoch(train)  [9][50/72]  lr: 1.7926e-03  eta: 0:05:41  time: 0.1020  data_time: 0.0377  memory: 530  loss: 0.3617
+2023/02/05 00:41:22 - mmengine - INFO - Epoch(train)  [9][60/72]  lr: 1.7926e-03  eta: 0:05:39  time: 0.1005  data_time: 0.0326  memory: 530  loss: 0.4037
+2023/02/05 00:41:23 - mmengine - INFO - Epoch(train)  [9][70/72]  lr: 1.7926e-03  eta: 0:05:37  time: 0.0987  data_time: 0.0289  memory: 530  loss: 0.5147
+2023/02/05 00:41:23 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:41:24 - mmengine - INFO - Epoch(train) [10][10/72]  lr: 1.7926e-03  eta: 0:05:35  time: 0.1088  data_time: 0.0457  memory: 530  loss: 0.5273
+2023/02/05 00:41:25 - mmengine - INFO - Epoch(train) [10][20/72]  lr: 1.7926e-03  eta: 0:05:34  time: 0.1098  data_time: 0.0394  memory: 530  loss: 0.3815
+2023/02/05 00:41:26 - mmengine - INFO - Epoch(train) [10][30/72]  lr: 1.7926e-03  eta: 0:05:32  time: 0.1023  data_time: 0.0351  memory: 530  loss: 0.4172
+2023/02/05 00:41:27 - mmengine - INFO - Epoch(train) [10][40/72]  lr: 1.7926e-03  eta: 0:05:30  time: 0.0997  data_time: 0.0346  memory: 530  loss: 0.4044
+2023/02/05 00:41:28 - mmengine - INFO - Epoch(train) [10][50/72]  lr: 1.7926e-03  eta: 0:05:29  time: 0.0999  data_time: 0.0282  memory: 530  loss: 0.4716
+2023/02/05 00:41:29 - mmengine - INFO - Epoch(train) [10][60/72]  lr: 1.7926e-03  eta: 0:05:27  time: 0.1063  data_time: 0.0373  memory: 530  loss: 0.4198
+2023/02/05 00:41:30 - mmengine - INFO - Epoch(train) [10][70/72]  lr: 1.7926e-03  eta: 0:05:26  time: 0.1024  data_time: 0.0326  memory: 530  loss: 0.4207
+2023/02/05 00:41:31 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:41:31 - mmengine - INFO - Saving checkpoint at 10 epochs
+2023/02/05 00:41:32 - mmengine - INFO - Epoch(val) [10][10/18]    eta: 0:00:00  time: 0.0582  data_time: 0.0401  memory: 530  
+2023/02/05 00:41:32 - mmengine - INFO - Epoch(val) [10][18/18]  accuracy/top1: 86.0140
+2023/02/05 00:41:33 - mmengine - INFO - Epoch(train) [11][10/72]  lr: 1.7442e-03  eta: 0:05:24  time: 0.1178  data_time: 0.0438  memory: 530  loss: 0.3923
+2023/02/05 00:41:34 - mmengine - INFO - Epoch(train) [11][20/72]  lr: 1.7442e-03  eta: 0:05:23  time: 0.1025  data_time: 0.0300  memory: 530  loss: 0.4764
+2023/02/05 00:41:35 - mmengine - INFO - Epoch(train) [11][30/72]  lr: 1.7442e-03  eta: 0:05:21  time: 0.1048  data_time: 0.0355  memory: 530  loss: 0.4382
+2023/02/05 00:41:36 - mmengine - INFO - Epoch(train) [11][40/72]  lr: 1.7442e-03  eta: 0:05:19  time: 0.0966  data_time: 0.0322  memory: 530  loss: 0.3905
+2023/02/05 00:41:37 - mmengine - INFO - Epoch(train) [11][50/72]  lr: 1.7442e-03  eta: 0:05:18  time: 0.0998  data_time: 0.0242  memory: 530  loss: 0.3456
+2023/02/05 00:41:38 - mmengine - INFO - Epoch(train) [11][60/72]  lr: 1.7442e-03  eta: 0:05:16  time: 0.0955  data_time: 0.0277  memory: 530  loss: 0.3596
+2023/02/05 00:41:39 - mmengine - INFO - Epoch(train) [11][70/72]  lr: 1.7442e-03  eta: 0:05:15  time: 0.1029  data_time: 0.0355  memory: 530  loss: 0.3619
+2023/02/05 00:41:39 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:41:41 - mmengine - INFO - Epoch(train) [12][10/72]  lr: 1.7442e-03  eta: 0:05:13  time: 0.1147  data_time: 0.0474  memory: 530  loss: 0.3814
+2023/02/05 00:41:42 - mmengine - INFO - Epoch(train) [12][20/72]  lr: 1.7442e-03  eta: 0:05:11  time: 0.0950  data_time: 0.0287  memory: 530  loss: 0.4169
+2023/02/05 00:41:43 - mmengine - INFO - Epoch(train) [12][30/72]  lr: 1.7442e-03  eta: 0:05:10  time: 0.1114  data_time: 0.0367  memory: 530  loss: 0.4021
+2023/02/05 00:41:44 - mmengine - INFO - Epoch(train) [12][40/72]  lr: 1.7442e-03  eta: 0:05:09  time: 0.1031  data_time: 0.0365  memory: 530  loss: 0.3475
+2023/02/05 00:41:45 - mmengine - INFO - Epoch(train) [12][50/72]  lr: 1.7442e-03  eta: 0:05:07  time: 0.1022  data_time: 0.0365  memory: 530  loss: 0.4162
+2023/02/05 00:41:46 - mmengine - INFO - Epoch(train) [12][60/72]  lr: 1.7442e-03  eta: 0:05:06  time: 0.1035  data_time: 0.0348  memory: 530  loss: 0.3907
+2023/02/05 00:41:47 - mmengine - INFO - Epoch(train) [12][70/72]  lr: 1.7442e-03  eta: 0:05:05  time: 0.0997  data_time: 0.0370  memory: 530  loss: 0.3929
+2023/02/05 00:41:47 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:41:48 - mmengine - INFO - Epoch(train) [13][10/72]  lr: 1.6971e-03  eta: 0:05:03  time: 0.1200  data_time: 0.0535  memory: 530  loss: 0.5891
+2023/02/05 00:41:49 - mmengine - INFO - Epoch(train) [13][20/72]  lr: 1.6971e-03  eta: 0:05:01  time: 0.0960  data_time: 0.0278  memory: 530  loss: 0.5276
+2023/02/05 00:41:50 - mmengine - INFO - Epoch(train) [13][30/72]  lr: 1.6971e-03  eta: 0:05:00  time: 0.1034  data_time: 0.0348  memory: 530  loss: 0.5046
+2023/02/05 00:41:51 - mmengine - INFO - Epoch(train) [13][40/72]  lr: 1.6971e-03  eta: 0:04:59  time: 0.1064  data_time: 0.0386  memory: 530  loss: 0.3678
+2023/02/05 00:41:52 - mmengine - INFO - Epoch(train) [13][50/72]  lr: 1.6971e-03  eta: 0:04:58  time: 0.1152  data_time: 0.0402  memory: 530  loss: 0.3661
+2023/02/05 00:41:53 - mmengine - INFO - Epoch(train) [13][60/72]  lr: 1.6971e-03  eta: 0:04:57  time: 0.1079  data_time: 0.0379  memory: 530  loss: 0.3173
+2023/02/05 00:41:54 - mmengine - INFO - Epoch(train) [13][70/72]  lr: 1.6971e-03  eta: 0:04:55  time: 0.1017  data_time: 0.0319  memory: 530  loss: 0.3694
+2023/02/05 00:41:55 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:41:56 - mmengine - INFO - Epoch(train) [14][10/72]  lr: 1.6971e-03  eta: 0:04:54  time: 0.1092  data_time: 0.0438  memory: 530  loss: 0.3010
+2023/02/05 00:41:57 - mmengine - INFO - Epoch(train) [14][20/72]  lr: 1.6971e-03  eta: 0:04:52  time: 0.0985  data_time: 0.0295  memory: 530  loss: 0.4114
+2023/02/05 00:41:58 - mmengine - INFO - Epoch(train) [14][30/72]  lr: 1.6971e-03  eta: 0:04:51  time: 0.0987  data_time: 0.0300  memory: 530  loss: 0.2809
+2023/02/05 00:41:59 - mmengine - INFO - Epoch(train) [14][40/72]  lr: 1.6971e-03  eta: 0:04:50  time: 0.1031  data_time: 0.0333  memory: 530  loss: 0.4035
+2023/02/05 00:42:00 - mmengine - INFO - Epoch(train) [14][50/72]  lr: 1.6971e-03  eta: 0:04:49  time: 0.1107  data_time: 0.0417  memory: 530  loss: 0.3497
+2023/02/05 00:42:01 - mmengine - INFO - Epoch(train) [14][60/72]  lr: 1.6971e-03  eta: 0:04:47  time: 0.1040  data_time: 0.0342  memory: 530  loss: 0.3036
+2023/02/05 00:42:01 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:42:02 - mmengine - INFO - Epoch(train) [14][70/72]  lr: 1.6971e-03  eta: 0:04:46  time: 0.1089  data_time: 0.0358  memory: 530  loss: 0.3608
+2023/02/05 00:42:02 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:42:03 - mmengine - INFO - Epoch(train) [15][10/72]  lr: 1.6513e-03  eta: 0:04:45  time: 0.1156  data_time: 0.0474  memory: 530  loss: 0.4350
+2023/02/05 00:42:04 - mmengine - INFO - Epoch(train) [15][20/72]  lr: 1.6513e-03  eta: 0:04:44  time: 0.1165  data_time: 0.0438  memory: 530  loss: 0.4327
+2023/02/05 00:42:05 - mmengine - INFO - Epoch(train) [15][30/72]  lr: 1.6513e-03  eta: 0:04:43  time: 0.1136  data_time: 0.0360  memory: 530  loss: 0.3522
+2023/02/05 00:42:07 - mmengine - INFO - Epoch(train) [15][40/72]  lr: 1.6513e-03  eta: 0:04:42  time: 0.1045  data_time: 0.0325  memory: 530  loss: 0.4118
+2023/02/05 00:42:08 - mmengine - INFO - Epoch(train) [15][50/72]  lr: 1.6513e-03  eta: 0:04:40  time: 0.1083  data_time: 0.0379  memory: 530  loss: 0.2949
+2023/02/05 00:42:09 - mmengine - INFO - Epoch(train) [15][60/72]  lr: 1.6513e-03  eta: 0:04:39  time: 0.0994  data_time: 0.0274  memory: 530  loss: 0.3629
+2023/02/05 00:42:10 - mmengine - INFO - Epoch(train) [15][70/72]  lr: 1.6513e-03  eta: 0:04:38  time: 0.1082  data_time: 0.0363  memory: 530  loss: 0.3449
+2023/02/05 00:42:10 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:42:10 - mmengine - INFO - Epoch(val) [15][10/18]    eta: 0:00:00  time: 0.0572  data_time: 0.0368  memory: 530  
+2023/02/05 00:42:11 - mmengine - INFO - Epoch(val) [15][18/18]  accuracy/top1: 86.7133
+2023/02/05 00:42:12 - mmengine - INFO - Epoch(train) [16][10/72]  lr: 1.6513e-03  eta: 0:04:37  time: 0.1216  data_time: 0.0442  memory: 530  loss: 0.3983
+2023/02/05 00:42:13 - mmengine - INFO - Epoch(train) [16][20/72]  lr: 1.6513e-03  eta: 0:04:35  time: 0.1042  data_time: 0.0347  memory: 530  loss: 0.3602
+2023/02/05 00:42:14 - mmengine - INFO - Epoch(train) [16][30/72]  lr: 1.6513e-03  eta: 0:04:34  time: 0.1108  data_time: 0.0393  memory: 530  loss: 0.2914
+2023/02/05 00:42:15 - mmengine - INFO - Epoch(train) [16][40/72]  lr: 1.6513e-03  eta: 0:04:33  time: 0.1066  data_time: 0.0323  memory: 530  loss: 0.3436
+2023/02/05 00:42:16 - mmengine - INFO - Epoch(train) [16][50/72]  lr: 1.6513e-03  eta: 0:04:32  time: 0.1227  data_time: 0.0474  memory: 530  loss: 0.2937
+2023/02/05 00:42:17 - mmengine - INFO - Epoch(train) [16][60/72]  lr: 1.6513e-03  eta: 0:04:31  time: 0.1044  data_time: 0.0350  memory: 530  loss: 0.3932
+2023/02/05 00:42:18 - mmengine - INFO - Epoch(train) [16][70/72]  lr: 1.6513e-03  eta: 0:04:30  time: 0.0994  data_time: 0.0324  memory: 530  loss: 0.3034
+2023/02/05 00:42:19 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:42:20 - mmengine - INFO - Epoch(train) [17][10/72]  lr: 1.6067e-03  eta: 0:04:28  time: 0.1047  data_time: 0.0367  memory: 530  loss: 0.3931
+2023/02/05 00:42:21 - mmengine - INFO - Epoch(train) [17][20/72]  lr: 1.6067e-03  eta: 0:04:27  time: 0.0995  data_time: 0.0271  memory: 530  loss: 0.4001
+2023/02/05 00:42:22 - mmengine - INFO - Epoch(train) [17][30/72]  lr: 1.6067e-03  eta: 0:04:26  time: 0.1037  data_time: 0.0290  memory: 530  loss: 0.3896
+2023/02/05 00:42:23 - mmengine - INFO - Epoch(train) [17][40/72]  lr: 1.6067e-03  eta: 0:04:24  time: 0.1037  data_time: 0.0319  memory: 530  loss: 0.3634
+2023/02/05 00:42:24 - mmengine - INFO - Epoch(train) [17][50/72]  lr: 1.6067e-03  eta: 0:04:23  time: 0.1014  data_time: 0.0333  memory: 530  loss: 0.2861
+2023/02/05 00:42:25 - mmengine - INFO - Epoch(train) [17][60/72]  lr: 1.6067e-03  eta: 0:04:22  time: 0.1037  data_time: 0.0375  memory: 530  loss: 0.3466
+2023/02/05 00:42:26 - mmengine - INFO - Epoch(train) [17][70/72]  lr: 1.6067e-03  eta: 0:04:20  time: 0.0972  data_time: 0.0332  memory: 530  loss: 0.2741
+2023/02/05 00:42:26 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:42:27 - mmengine - INFO - Epoch(train) [18][10/72]  lr: 1.6067e-03  eta: 0:04:19  time: 0.1179  data_time: 0.0454  memory: 530  loss: 0.3379
+2023/02/05 00:42:28 - mmengine - INFO - Epoch(train) [18][20/72]  lr: 1.6067e-03  eta: 0:04:18  time: 0.1033  data_time: 0.0323  memory: 530  loss: 0.2480
+2023/02/05 00:42:29 - mmengine - INFO - Epoch(train) [18][30/72]  lr: 1.6067e-03  eta: 0:04:17  time: 0.1049  data_time: 0.0315  memory: 530  loss: 0.3295
+2023/02/05 00:42:30 - mmengine - INFO - Epoch(train) [18][40/72]  lr: 1.6067e-03  eta: 0:04:16  time: 0.1018  data_time: 0.0351  memory: 530  loss: 0.3098
+2023/02/05 00:42:31 - mmengine - INFO - Epoch(train) [18][50/72]  lr: 1.6067e-03  eta: 0:04:14  time: 0.1048  data_time: 0.0314  memory: 530  loss: 0.3157
+2023/02/05 00:42:32 - mmengine - INFO - Epoch(train) [18][60/72]  lr: 1.6067e-03  eta: 0:04:13  time: 0.1005  data_time: 0.0311  memory: 530  loss: 0.4378
+2023/02/05 00:42:33 - mmengine - INFO - Epoch(train) [18][70/72]  lr: 1.6067e-03  eta: 0:04:12  time: 0.1023  data_time: 0.0356  memory: 530  loss: 0.3229
+2023/02/05 00:42:33 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:42:35 - mmengine - INFO - Epoch(train) [19][10/72]  lr: 1.5633e-03  eta: 0:04:11  time: 0.1128  data_time: 0.0420  memory: 530  loss: 0.3273
+2023/02/05 00:42:36 - mmengine - INFO - Epoch(train) [19][20/72]  lr: 1.5633e-03  eta: 0:04:09  time: 0.0995  data_time: 0.0325  memory: 530  loss: 0.3442
+2023/02/05 00:42:37 - mmengine - INFO - Epoch(train) [19][30/72]  lr: 1.5633e-03  eta: 0:04:08  time: 0.1042  data_time: 0.0350  memory: 530  loss: 0.3359
+2023/02/05 00:42:38 - mmengine - INFO - Epoch(train) [19][40/72]  lr: 1.5633e-03  eta: 0:04:07  time: 0.1018  data_time: 0.0336  memory: 530  loss: 0.3668
+2023/02/05 00:42:39 - mmengine - INFO - Epoch(train) [19][50/72]  lr: 1.5633e-03  eta: 0:04:06  time: 0.1043  data_time: 0.0357  memory: 530  loss: 0.3111
+2023/02/05 00:42:40 - mmengine - INFO - Epoch(train) [19][60/72]  lr: 1.5633e-03  eta: 0:04:05  time: 0.1036  data_time: 0.0338  memory: 530  loss: 0.3516
+2023/02/05 00:42:41 - mmengine - INFO - Epoch(train) [19][70/72]  lr: 1.5633e-03  eta: 0:04:03  time: 0.1035  data_time: 0.0295  memory: 530  loss: 0.2842
+2023/02/05 00:42:41 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:42:42 - mmengine - INFO - Epoch(train) [20][10/72]  lr: 1.5633e-03  eta: 0:04:02  time: 0.1156  data_time: 0.0452  memory: 530  loss: 0.3495
+2023/02/05 00:42:43 - mmengine - INFO - Epoch(train) [20][20/72]  lr: 1.5633e-03  eta: 0:04:01  time: 0.1079  data_time: 0.0373  memory: 530  loss: 0.3496
+2023/02/05 00:42:44 - mmengine - INFO - Epoch(train) [20][30/72]  lr: 1.5633e-03  eta: 0:04:00  time: 0.0986  data_time: 0.0296  memory: 530  loss: 0.3400
+2023/02/05 00:42:45 - mmengine - INFO - Epoch(train) [20][40/72]  lr: 1.5633e-03  eta: 0:03:58  time: 0.1048  data_time: 0.0328  memory: 530  loss: 0.3773
+2023/02/05 00:42:46 - mmengine - INFO - Epoch(train) [20][50/72]  lr: 1.5633e-03  eta: 0:03:57  time: 0.1019  data_time: 0.0341  memory: 530  loss: 0.3962
+2023/02/05 00:42:47 - mmengine - INFO - Epoch(train) [20][60/72]  lr: 1.5633e-03  eta: 0:03:56  time: 0.1042  data_time: 0.0306  memory: 530  loss: 0.3350
+2023/02/05 00:42:48 - mmengine - INFO - Epoch(train) [20][70/72]  lr: 1.5633e-03  eta: 0:03:55  time: 0.1045  data_time: 0.0370  memory: 530  loss: 0.3377
+2023/02/05 00:42:48 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:42:48 - mmengine - INFO - Saving checkpoint at 20 epochs
+2023/02/05 00:42:49 - mmengine - INFO - Epoch(val) [20][10/18]    eta: 0:00:00  time: 0.0521  data_time: 0.0319  memory: 530  
+2023/02/05 00:42:50 - mmengine - INFO - Epoch(val) [20][18/18]  accuracy/top1: 88.4615
+2023/02/05 00:42:51 - mmengine - INFO - Epoch(train) [21][10/72]  lr: 1.5211e-03  eta: 0:03:54  time: 0.1149  data_time: 0.0446  memory: 530  loss: 0.3388
+2023/02/05 00:42:52 - mmengine - INFO - Epoch(train) [21][20/72]  lr: 1.5211e-03  eta: 0:03:52  time: 0.1024  data_time: 0.0293  memory: 530  loss: 0.3580
+2023/02/05 00:42:53 - mmengine - INFO - Epoch(train) [21][30/72]  lr: 1.5211e-03  eta: 0:03:51  time: 0.1044  data_time: 0.0319  memory: 530  loss: 0.3346
+2023/02/05 00:42:54 - mmengine - INFO - Epoch(train) [21][40/72]  lr: 1.5211e-03  eta: 0:03:50  time: 0.1021  data_time: 0.0353  memory: 530  loss: 0.3135
+2023/02/05 00:42:55 - mmengine - INFO - Epoch(train) [21][50/72]  lr: 1.5211e-03  eta: 0:03:49  time: 0.1035  data_time: 0.0319  memory: 530  loss: 0.3616
+2023/02/05 00:42:56 - mmengine - INFO - Epoch(train) [21][60/72]  lr: 1.5211e-03  eta: 0:03:48  time: 0.1023  data_time: 0.0343  memory: 530  loss: 0.2916
+2023/02/05 00:42:57 - mmengine - INFO - Epoch(train) [21][70/72]  lr: 1.5211e-03  eta: 0:03:47  time: 0.1031  data_time: 0.0307  memory: 530  loss: 0.2996
+2023/02/05 00:42:57 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:42:58 - mmengine - INFO - Epoch(train) [22][10/72]  lr: 1.5211e-03  eta: 0:03:45  time: 0.1112  data_time: 0.0441  memory: 530  loss: 0.3392
+2023/02/05 00:42:59 - mmengine - INFO - Epoch(train) [22][20/72]  lr: 1.5211e-03  eta: 0:03:44  time: 0.1092  data_time: 0.0394  memory: 530  loss: 0.3089
+2023/02/05 00:43:00 - mmengine - INFO - Epoch(train) [22][30/72]  lr: 1.5211e-03  eta: 0:03:43  time: 0.0957  data_time: 0.0291  memory: 530  loss: 0.2935
+2023/02/05 00:43:01 - mmengine - INFO - Epoch(train) [22][40/72]  lr: 1.5211e-03  eta: 0:03:42  time: 0.0996  data_time: 0.0318  memory: 530  loss: 0.3089
+2023/02/05 00:43:02 - mmengine - INFO - Epoch(train) [22][50/72]  lr: 1.5211e-03  eta: 0:03:40  time: 0.0951  data_time: 0.0296  memory: 530  loss: 0.2777
+2023/02/05 00:43:03 - mmengine - INFO - Epoch(train) [22][60/72]  lr: 1.5211e-03  eta: 0:03:39  time: 0.1036  data_time: 0.0375  memory: 530  loss: 0.3151
+2023/02/05 00:43:04 - mmengine - INFO - Epoch(train) [22][70/72]  lr: 1.5211e-03  eta: 0:03:38  time: 0.0958  data_time: 0.0292  memory: 530  loss: 0.3003
+2023/02/05 00:43:05 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:43:06 - mmengine - INFO - Epoch(train) [23][10/72]  lr: 1.4800e-03  eta: 0:03:37  time: 0.1125  data_time: 0.0419  memory: 530  loss: 0.2792
+2023/02/05 00:43:07 - mmengine - INFO - Epoch(train) [23][20/72]  lr: 1.4800e-03  eta: 0:03:35  time: 0.0991  data_time: 0.0330  memory: 530  loss: 0.2693
+2023/02/05 00:43:08 - mmengine - INFO - Epoch(train) [23][30/72]  lr: 1.4800e-03  eta: 0:03:34  time: 0.1068  data_time: 0.0410  memory: 530  loss: 0.3442
+2023/02/05 00:43:09 - mmengine - INFO - Epoch(train) [23][40/72]  lr: 1.4800e-03  eta: 0:03:33  time: 0.1068  data_time: 0.0436  memory: 530  loss: 0.3105
+2023/02/05 00:43:10 - mmengine - INFO - Epoch(train) [23][50/72]  lr: 1.4800e-03  eta: 0:03:32  time: 0.1014  data_time: 0.0338  memory: 530  loss: 0.2736
+2023/02/05 00:43:11 - mmengine - INFO - Epoch(train) [23][60/72]  lr: 1.4800e-03  eta: 0:03:31  time: 0.0983  data_time: 0.0320  memory: 530  loss: 0.2622
+2023/02/05 00:43:12 - mmengine - INFO - Epoch(train) [23][70/72]  lr: 1.4800e-03  eta: 0:03:30  time: 0.0949  data_time: 0.0269  memory: 530  loss: 0.2920
+2023/02/05 00:43:12 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:43:13 - mmengine - INFO - Epoch(train) [24][10/72]  lr: 1.4800e-03  eta: 0:03:28  time: 0.1108  data_time: 0.0445  memory: 530  loss: 0.3947
+2023/02/05 00:43:14 - mmengine - INFO - Epoch(train) [24][20/72]  lr: 1.4800e-03  eta: 0:03:27  time: 0.0985  data_time: 0.0321  memory: 530  loss: 0.3748
+2023/02/05 00:43:15 - mmengine - INFO - Epoch(train) [24][30/72]  lr: 1.4800e-03  eta: 0:03:26  time: 0.0984  data_time: 0.0345  memory: 530  loss: 0.2304
+2023/02/05 00:43:16 - mmengine - INFO - Epoch(train) [24][40/72]  lr: 1.4800e-03  eta: 0:03:25  time: 0.0940  data_time: 0.0312  memory: 530  loss: 0.2683
+2023/02/05 00:43:17 - mmengine - INFO - Epoch(train) [24][50/72]  lr: 1.4800e-03  eta: 0:03:24  time: 0.0991  data_time: 0.0288  memory: 530  loss: 0.3624
+2023/02/05 00:43:18 - mmengine - INFO - Epoch(train) [24][60/72]  lr: 1.4800e-03  eta: 0:03:22  time: 0.0937  data_time: 0.0303  memory: 530  loss: 0.3351
+2023/02/05 00:43:19 - mmengine - INFO - Epoch(train) [24][70/72]  lr: 1.4800e-03  eta: 0:03:21  time: 0.0955  data_time: 0.0309  memory: 530  loss: 0.2759
+2023/02/05 00:43:19 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:43:20 - mmengine - INFO - Epoch(train) [25][10/72]  lr: 1.4401e-03  eta: 0:03:20  time: 0.1062  data_time: 0.0412  memory: 530  loss: 0.2464
+2023/02/05 00:43:21 - mmengine - INFO - Epoch(train) [25][20/72]  lr: 1.4401e-03  eta: 0:03:19  time: 0.0972  data_time: 0.0291  memory: 530  loss: 0.2704
+2023/02/05 00:43:22 - mmengine - INFO - Epoch(train) [25][30/72]  lr: 1.4401e-03  eta: 0:03:17  time: 0.0907  data_time: 0.0239  memory: 530  loss: 0.3067
+2023/02/05 00:43:23 - mmengine - INFO - Epoch(train) [25][40/72]  lr: 1.4401e-03  eta: 0:03:16  time: 0.0918  data_time: 0.0275  memory: 530  loss: 0.2692
+2023/02/05 00:43:24 - mmengine - INFO - Epoch(train) [25][50/72]  lr: 1.4401e-03  eta: 0:03:15  time: 0.1016  data_time: 0.0335  memory: 530  loss: 0.2507
+2023/02/05 00:43:25 - mmengine - INFO - Epoch(train) [25][60/72]  lr: 1.4401e-03  eta: 0:03:14  time: 0.0929  data_time: 0.0236  memory: 530  loss: 0.2883
+2023/02/05 00:43:26 - mmengine - INFO - Epoch(train) [25][70/72]  lr: 1.4401e-03  eta: 0:03:12  time: 0.0902  data_time: 0.0241  memory: 530  loss: 0.3520
+2023/02/05 00:43:26 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:43:26 - mmengine - INFO - Epoch(val) [25][10/18]    eta: 0:00:00  time: 0.0531  data_time: 0.0342  memory: 530  
+2023/02/05 00:43:27 - mmengine - INFO - Epoch(val) [25][18/18]  accuracy/top1: 92.3077
+2023/02/05 00:43:28 - mmengine - INFO - Epoch(train) [26][10/72]  lr: 1.4401e-03  eta: 0:03:11  time: 0.1134  data_time: 0.0479  memory: 530  loss: 0.4026
+2023/02/05 00:43:29 - mmengine - INFO - Epoch(train) [26][20/72]  lr: 1.4401e-03  eta: 0:03:10  time: 0.0956  data_time: 0.0328  memory: 530  loss: 0.2579
+2023/02/05 00:43:30 - mmengine - INFO - Epoch(train) [26][30/72]  lr: 1.4401e-03  eta: 0:03:09  time: 0.0986  data_time: 0.0346  memory: 530  loss: 0.3900
+2023/02/05 00:43:31 - mmengine - INFO - Epoch(train) [26][40/72]  lr: 1.4401e-03  eta: 0:03:08  time: 0.0981  data_time: 0.0319  memory: 530  loss: 0.2899
+2023/02/05 00:43:32 - mmengine - INFO - Epoch(train) [26][50/72]  lr: 1.4401e-03  eta: 0:03:06  time: 0.0944  data_time: 0.0263  memory: 530  loss: 0.3189
+2023/02/05 00:43:33 - mmengine - INFO - Epoch(train) [26][60/72]  lr: 1.4401e-03  eta: 0:03:05  time: 0.0942  data_time: 0.0264  memory: 530  loss: 0.2904
+2023/02/05 00:43:34 - mmengine - INFO - Epoch(train) [26][70/72]  lr: 1.4401e-03  eta: 0:03:04  time: 0.0979  data_time: 0.0325  memory: 530  loss: 0.2453
+2023/02/05 00:43:34 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:43:35 - mmengine - INFO - Epoch(train) [27][10/72]  lr: 1.4012e-03  eta: 0:03:03  time: 0.1125  data_time: 0.0461  memory: 530  loss: 0.3667
+2023/02/05 00:43:36 - mmengine - INFO - Epoch(train) [27][20/72]  lr: 1.4012e-03  eta: 0:03:02  time: 0.0908  data_time: 0.0256  memory: 530  loss: 0.3081
+2023/02/05 00:43:37 - mmengine - INFO - Epoch(train) [27][30/72]  lr: 1.4012e-03  eta: 0:03:00  time: 0.0995  data_time: 0.0310  memory: 530  loss: 0.3217
+2023/02/05 00:43:38 - mmengine - INFO - Epoch(train) [27][40/72]  lr: 1.4012e-03  eta: 0:02:59  time: 0.0975  data_time: 0.0326  memory: 530  loss: 0.2767
+2023/02/05 00:43:39 - mmengine - INFO - Epoch(train) [27][50/72]  lr: 1.4012e-03  eta: 0:02:58  time: 0.0957  data_time: 0.0305  memory: 530  loss: 0.2424
+2023/02/05 00:43:40 - mmengine - INFO - Epoch(train) [27][60/72]  lr: 1.4012e-03  eta: 0:02:57  time: 0.1020  data_time: 0.0324  memory: 530  loss: 0.2984
+2023/02/05 00:43:41 - mmengine - INFO - Epoch(train) [27][70/72]  lr: 1.4012e-03  eta: 0:02:56  time: 0.1033  data_time: 0.0367  memory: 530  loss: 0.2638
+2023/02/05 00:43:41 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:43:42 - mmengine - INFO - Epoch(train) [28][10/72]  lr: 1.4012e-03  eta: 0:02:55  time: 0.1099  data_time: 0.0412  memory: 530  loss: 0.2400
+2023/02/05 00:43:43 - mmengine - INFO - Epoch(train) [28][20/72]  lr: 1.4012e-03  eta: 0:02:54  time: 0.1025  data_time: 0.0326  memory: 530  loss: 0.2457
+2023/02/05 00:43:44 - mmengine - INFO - Epoch(train) [28][30/72]  lr: 1.4012e-03  eta: 0:02:52  time: 0.1007  data_time: 0.0305  memory: 530  loss: 0.2486
+2023/02/05 00:43:45 - mmengine - INFO - Epoch(train) [28][40/72]  lr: 1.4012e-03  eta: 0:02:51  time: 0.1006  data_time: 0.0359  memory: 530  loss: 0.2239
+2023/02/05 00:43:46 - mmengine - INFO - Epoch(train) [28][50/72]  lr: 1.4012e-03  eta: 0:02:50  time: 0.0989  data_time: 0.0307  memory: 530  loss: 0.3128
+2023/02/05 00:43:47 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:43:47 - mmengine - INFO - Epoch(train) [28][60/72]  lr: 1.4012e-03  eta: 0:02:49  time: 0.0959  data_time: 0.0260  memory: 530  loss: 0.3097
+2023/02/05 00:43:48 - mmengine - INFO - Epoch(train) [28][70/72]  lr: 1.4012e-03  eta: 0:02:48  time: 0.1011  data_time: 0.0314  memory: 530  loss: 0.2515
+2023/02/05 00:43:48 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:43:49 - mmengine - INFO - Epoch(train) [29][10/72]  lr: 1.3634e-03  eta: 0:02:47  time: 0.1141  data_time: 0.0480  memory: 530  loss: 0.3863
+2023/02/05 00:43:50 - mmengine - INFO - Epoch(train) [29][20/72]  lr: 1.3634e-03  eta: 0:02:46  time: 0.1016  data_time: 0.0316  memory: 530  loss: 0.2951
+2023/02/05 00:43:51 - mmengine - INFO - Epoch(train) [29][30/72]  lr: 1.3634e-03  eta: 0:02:44  time: 0.0973  data_time: 0.0274  memory: 530  loss: 0.3375
+2023/02/05 00:43:52 - mmengine - INFO - Epoch(train) [29][40/72]  lr: 1.3634e-03  eta: 0:02:43  time: 0.0968  data_time: 0.0291  memory: 530  loss: 0.2977
+2023/02/05 00:43:53 - mmengine - INFO - Epoch(train) [29][50/72]  lr: 1.3634e-03  eta: 0:02:42  time: 0.0949  data_time: 0.0252  memory: 530  loss: 0.2543
+2023/02/05 00:43:54 - mmengine - INFO - Epoch(train) [29][60/72]  lr: 1.3634e-03  eta: 0:02:41  time: 0.0946  data_time: 0.0309  memory: 530  loss: 0.2483
+2023/02/05 00:43:55 - mmengine - INFO - Epoch(train) [29][70/72]  lr: 1.3634e-03  eta: 0:02:40  time: 0.1034  data_time: 0.0358  memory: 530  loss: 0.2641
+2023/02/05 00:43:55 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:43:56 - mmengine - INFO - Epoch(train) [30][10/72]  lr: 1.3634e-03  eta: 0:02:39  time: 0.1087  data_time: 0.0427  memory: 530  loss: 0.2632
+2023/02/05 00:43:57 - mmengine - INFO - Epoch(train) [30][20/72]  lr: 1.3634e-03  eta: 0:02:38  time: 0.0977  data_time: 0.0315  memory: 530  loss: 0.2595
+2023/02/05 00:43:58 - mmengine - INFO - Epoch(train) [30][30/72]  lr: 1.3634e-03  eta: 0:02:36  time: 0.1030  data_time: 0.0307  memory: 530  loss: 0.2149
+2023/02/05 00:43:59 - mmengine - INFO - Epoch(train) [30][40/72]  lr: 1.3634e-03  eta: 0:02:35  time: 0.0976  data_time: 0.0293  memory: 530  loss: 0.3942
+2023/02/05 00:44:00 - mmengine - INFO - Epoch(train) [30][50/72]  lr: 1.3634e-03  eta: 0:02:34  time: 0.0941  data_time: 0.0240  memory: 530  loss: 0.2947
+2023/02/05 00:44:01 - mmengine - INFO - Epoch(train) [30][60/72]  lr: 1.3634e-03  eta: 0:02:33  time: 0.1010  data_time: 0.0354  memory: 530  loss: 0.3119
+2023/02/05 00:44:02 - mmengine - INFO - Epoch(train) [30][70/72]  lr: 1.3634e-03  eta: 0:02:32  time: 0.1028  data_time: 0.0383  memory: 530  loss: 0.2193
+2023/02/05 00:44:02 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:44:02 - mmengine - INFO - Saving checkpoint at 30 epochs
+2023/02/05 00:44:03 - mmengine - INFO - Epoch(val) [30][10/18]    eta: 0:00:00  time: 0.0560  data_time: 0.0364  memory: 530  
+2023/02/05 00:44:04 - mmengine - INFO - Epoch(val) [30][18/18]  accuracy/top1: 89.6853
+2023/02/05 00:44:05 - mmengine - INFO - Epoch(train) [31][10/72]  lr: 1.3265e-03  eta: 0:02:31  time: 0.1144  data_time: 0.0419  memory: 530  loss: 0.1983
+2023/02/05 00:44:06 - mmengine - INFO - Epoch(train) [31][20/72]  lr: 1.3265e-03  eta: 0:02:30  time: 0.1001  data_time: 0.0318  memory: 530  loss: 0.2644
+2023/02/05 00:44:07 - mmengine - INFO - Epoch(train) [31][30/72]  lr: 1.3265e-03  eta: 0:02:29  time: 0.1081  data_time: 0.0371  memory: 530  loss: 0.2707
+2023/02/05 00:44:08 - mmengine - INFO - Epoch(train) [31][40/72]  lr: 1.3265e-03  eta: 0:02:27  time: 0.0922  data_time: 0.0226  memory: 530  loss: 0.2535
+2023/02/05 00:44:09 - mmengine - INFO - Epoch(train) [31][50/72]  lr: 1.3265e-03  eta: 0:02:26  time: 0.0947  data_time: 0.0277  memory: 530  loss: 0.2475
+2023/02/05 00:44:10 - mmengine - INFO - Epoch(train) [31][60/72]  lr: 1.3265e-03  eta: 0:02:25  time: 0.1041  data_time: 0.0367  memory: 530  loss: 0.2157
+2023/02/05 00:44:11 - mmengine - INFO - Epoch(train) [31][70/72]  lr: 1.3265e-03  eta: 0:02:24  time: 0.1033  data_time: 0.0328  memory: 530  loss: 0.2816
+2023/02/05 00:44:11 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:44:12 - mmengine - INFO - Epoch(train) [32][10/72]  lr: 1.3265e-03  eta: 0:02:23  time: 0.1144  data_time: 0.0425  memory: 530  loss: 0.2361
+2023/02/05 00:44:13 - mmengine - INFO - Epoch(train) [32][20/72]  lr: 1.3265e-03  eta: 0:02:22  time: 0.1035  data_time: 0.0349  memory: 530  loss: 0.2795
+2023/02/05 00:44:14 - mmengine - INFO - Epoch(train) [32][30/72]  lr: 1.3265e-03  eta: 0:02:21  time: 0.0998  data_time: 0.0315  memory: 530  loss: 0.2345
+2023/02/05 00:44:15 - mmengine - INFO - Epoch(train) [32][40/72]  lr: 1.3265e-03  eta: 0:02:20  time: 0.0997  data_time: 0.0297  memory: 530  loss: 0.3104
+2023/02/05 00:44:16 - mmengine - INFO - Epoch(train) [32][50/72]  lr: 1.3265e-03  eta: 0:02:19  time: 0.1093  data_time: 0.0363  memory: 530  loss: 0.2381
+2023/02/05 00:44:17 - mmengine - INFO - Epoch(train) [32][60/72]  lr: 1.3265e-03  eta: 0:02:18  time: 0.1007  data_time: 0.0287  memory: 530  loss: 0.3173
+2023/02/05 00:44:18 - mmengine - INFO - Epoch(train) [32][70/72]  lr: 1.3265e-03  eta: 0:02:16  time: 0.0901  data_time: 0.0205  memory: 530  loss: 0.1609
+2023/02/05 00:44:18 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:44:20 - mmengine - INFO - Epoch(train) [33][10/72]  lr: 1.2907e-03  eta: 0:02:15  time: 0.1133  data_time: 0.0441  memory: 530  loss: 0.2644
+2023/02/05 00:44:21 - mmengine - INFO - Epoch(train) [33][20/72]  lr: 1.2907e-03  eta: 0:02:14  time: 0.1009  data_time: 0.0349  memory: 530  loss: 0.2395
+2023/02/05 00:44:22 - mmengine - INFO - Epoch(train) [33][30/72]  lr: 1.2907e-03  eta: 0:02:13  time: 0.1006  data_time: 0.0275  memory: 530  loss: 0.2393
+2023/02/05 00:44:23 - mmengine - INFO - Epoch(train) [33][40/72]  lr: 1.2907e-03  eta: 0:02:12  time: 0.0984  data_time: 0.0291  memory: 530  loss: 0.2676
+2023/02/05 00:44:24 - mmengine - INFO - Epoch(train) [33][50/72]  lr: 1.2907e-03  eta: 0:02:11  time: 0.0987  data_time: 0.0304  memory: 530  loss: 0.1930
+2023/02/05 00:44:25 - mmengine - INFO - Epoch(train) [33][60/72]  lr: 1.2907e-03  eta: 0:02:10  time: 0.1057  data_time: 0.0367  memory: 530  loss: 0.1950
+2023/02/05 00:44:26 - mmengine - INFO - Epoch(train) [33][70/72]  lr: 1.2907e-03  eta: 0:02:09  time: 0.0992  data_time: 0.0333  memory: 530  loss: 0.2101
+2023/02/05 00:44:26 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:44:27 - mmengine - INFO - Epoch(train) [34][10/72]  lr: 1.2907e-03  eta: 0:02:07  time: 0.1139  data_time: 0.0465  memory: 530  loss: 0.2810
+2023/02/05 00:44:28 - mmengine - INFO - Epoch(train) [34][20/72]  lr: 1.2907e-03  eta: 0:02:06  time: 0.0991  data_time: 0.0362  memory: 530  loss: 0.1986
+2023/02/05 00:44:29 - mmengine - INFO - Epoch(train) [34][30/72]  lr: 1.2907e-03  eta: 0:02:05  time: 0.1096  data_time: 0.0440  memory: 530  loss: 0.2342
+2023/02/05 00:44:30 - mmengine - INFO - Epoch(train) [34][40/72]  lr: 1.2907e-03  eta: 0:02:04  time: 0.0958  data_time: 0.0264  memory: 530  loss: 0.2546
+2023/02/05 00:44:31 - mmengine - INFO - Epoch(train) [34][50/72]  lr: 1.2907e-03  eta: 0:02:03  time: 0.1020  data_time: 0.0272  memory: 530  loss: 0.2815
+2023/02/05 00:44:32 - mmengine - INFO - Epoch(train) [34][60/72]  lr: 1.2907e-03  eta: 0:02:02  time: 0.1054  data_time: 0.0357  memory: 530  loss: 0.1963
+2023/02/05 00:44:33 - mmengine - INFO - Epoch(train) [34][70/72]  lr: 1.2907e-03  eta: 0:02:01  time: 0.1045  data_time: 0.0392  memory: 530  loss: 0.1890
+2023/02/05 00:44:33 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:44:34 - mmengine - INFO - Epoch(train) [35][10/72]  lr: 1.2559e-03  eta: 0:02:00  time: 0.1148  data_time: 0.0396  memory: 530  loss: 0.2530
+2023/02/05 00:44:35 - mmengine - INFO - Epoch(train) [35][20/72]  lr: 1.2559e-03  eta: 0:01:59  time: 0.1035  data_time: 0.0328  memory: 530  loss: 0.2158
+2023/02/05 00:44:36 - mmengine - INFO - Epoch(train) [35][30/72]  lr: 1.2559e-03  eta: 0:01:58  time: 0.0993  data_time: 0.0302  memory: 530  loss: 0.2614
+2023/02/05 00:44:37 - mmengine - INFO - Epoch(train) [35][40/72]  lr: 1.2559e-03  eta: 0:01:57  time: 0.1033  data_time: 0.0313  memory: 530  loss: 0.2481
+2023/02/05 00:44:38 - mmengine - INFO - Epoch(train) [35][50/72]  lr: 1.2559e-03  eta: 0:01:56  time: 0.1038  data_time: 0.0335  memory: 530  loss: 0.1711
+2023/02/05 00:44:39 - mmengine - INFO - Epoch(train) [35][60/72]  lr: 1.2559e-03  eta: 0:01:54  time: 0.1034  data_time: 0.0394  memory: 530  loss: 0.2787
+2023/02/05 00:44:40 - mmengine - INFO - Epoch(train) [35][70/72]  lr: 1.2559e-03  eta: 0:01:53  time: 0.1000  data_time: 0.0332  memory: 530  loss: 0.2581
+2023/02/05 00:44:41 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:44:41 - mmengine - INFO - Epoch(val) [35][10/18]    eta: 0:00:00  time: 0.0551  data_time: 0.0348  memory: 530  
+2023/02/05 00:44:42 - mmengine - INFO - Epoch(val) [35][18/18]  accuracy/top1: 88.8112
+2023/02/05 00:44:43 - mmengine - INFO - Epoch(train) [36][10/72]  lr: 1.2559e-03  eta: 0:01:52  time: 0.1159  data_time: 0.0456  memory: 530  loss: 0.2477
+2023/02/05 00:44:44 - mmengine - INFO - Epoch(train) [36][20/72]  lr: 1.2559e-03  eta: 0:01:51  time: 0.1041  data_time: 0.0349  memory: 530  loss: 0.2136
+2023/02/05 00:44:45 - mmengine - INFO - Epoch(train) [36][30/72]  lr: 1.2559e-03  eta: 0:01:50  time: 0.1003  data_time: 0.0296  memory: 530  loss: 0.2660
+2023/02/05 00:44:46 - mmengine - INFO - Epoch(train) [36][40/72]  lr: 1.2559e-03  eta: 0:01:49  time: 0.1077  data_time: 0.0376  memory: 530  loss: 0.2645
+2023/02/05 00:44:47 - mmengine - INFO - Epoch(train) [36][50/72]  lr: 1.2559e-03  eta: 0:01:48  time: 0.1011  data_time: 0.0318  memory: 530  loss: 0.2316
+2023/02/05 00:44:48 - mmengine - INFO - Epoch(train) [36][60/72]  lr: 1.2559e-03  eta: 0:01:47  time: 0.1024  data_time: 0.0313  memory: 530  loss: 0.2143
+2023/02/05 00:44:49 - mmengine - INFO - Epoch(train) [36][70/72]  lr: 1.2559e-03  eta: 0:01:46  time: 0.0987  data_time: 0.0281  memory: 530  loss: 0.2279
+2023/02/05 00:44:49 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:44:50 - mmengine - INFO - Epoch(train) [37][10/72]  lr: 1.2220e-03  eta: 0:01:45  time: 0.1201  data_time: 0.0559  memory: 530  loss: 0.2598
+2023/02/05 00:44:51 - mmengine - INFO - Epoch(train) [37][20/72]  lr: 1.2220e-03  eta: 0:01:43  time: 0.0979  data_time: 0.0284  memory: 530  loss: 0.3349
+2023/02/05 00:44:52 - mmengine - INFO - Epoch(train) [37][30/72]  lr: 1.2220e-03  eta: 0:01:42  time: 0.0986  data_time: 0.0304  memory: 530  loss: 0.1877
+2023/02/05 00:44:53 - mmengine - INFO - Epoch(train) [37][40/72]  lr: 1.2220e-03  eta: 0:01:41  time: 0.1009  data_time: 0.0324  memory: 530  loss: 0.2317
+2023/02/05 00:44:54 - mmengine - INFO - Epoch(train) [37][50/72]  lr: 1.2220e-03  eta: 0:01:40  time: 0.1156  data_time: 0.0397  memory: 530  loss: 0.2103
+2023/02/05 00:44:55 - mmengine - INFO - Epoch(train) [37][60/72]  lr: 1.2220e-03  eta: 0:01:39  time: 0.1118  data_time: 0.0388  memory: 530  loss: 0.1783
+2023/02/05 00:44:57 - mmengine - INFO - Epoch(train) [37][70/72]  lr: 1.2220e-03  eta: 0:01:38  time: 0.1044  data_time: 0.0346  memory: 530  loss: 0.2893
+2023/02/05 00:44:57 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:44:58 - mmengine - INFO - Epoch(train) [38][10/72]  lr: 1.2220e-03  eta: 0:01:37  time: 0.1151  data_time: 0.0457  memory: 530  loss: 0.2563
+2023/02/05 00:44:59 - mmengine - INFO - Epoch(train) [38][20/72]  lr: 1.2220e-03  eta: 0:01:36  time: 0.1037  data_time: 0.0289  memory: 530  loss: 0.1736
+2023/02/05 00:45:00 - mmengine - INFO - Epoch(train) [38][30/72]  lr: 1.2220e-03  eta: 0:01:35  time: 0.1055  data_time: 0.0359  memory: 530  loss: 0.2289
+2023/02/05 00:45:01 - mmengine - INFO - Epoch(train) [38][40/72]  lr: 1.2220e-03  eta: 0:01:34  time: 0.1023  data_time: 0.0342  memory: 530  loss: 0.1979
+2023/02/05 00:45:02 - mmengine - INFO - Epoch(train) [38][50/72]  lr: 1.2220e-03  eta: 0:01:33  time: 0.1046  data_time: 0.0334  memory: 530  loss: 0.2691
+2023/02/05 00:45:03 - mmengine - INFO - Epoch(train) [38][60/72]  lr: 1.2220e-03  eta: 0:01:32  time: 0.0985  data_time: 0.0252  memory: 530  loss: 0.2420
+2023/02/05 00:45:04 - mmengine - INFO - Epoch(train) [38][70/72]  lr: 1.2220e-03  eta: 0:01:31  time: 0.0993  data_time: 0.0313  memory: 530  loss: 0.1955
+2023/02/05 00:45:04 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:45:05 - mmengine - INFO - Epoch(train) [39][10/72]  lr: 1.1890e-03  eta: 0:01:29  time: 0.1118  data_time: 0.0426  memory: 530  loss: 0.1863
+2023/02/05 00:45:06 - mmengine - INFO - Epoch(train) [39][20/72]  lr: 1.1890e-03  eta: 0:01:28  time: 0.1047  data_time: 0.0299  memory: 530  loss: 0.2074
+2023/02/05 00:45:07 - mmengine - INFO - Epoch(train) [39][30/72]  lr: 1.1890e-03  eta: 0:01:27  time: 0.1002  data_time: 0.0249  memory: 530  loss: 0.1682
+2023/02/05 00:45:08 - mmengine - INFO - Epoch(train) [39][40/72]  lr: 1.1890e-03  eta: 0:01:26  time: 0.0939  data_time: 0.0250  memory: 530  loss: 0.2820
+2023/02/05 00:45:09 - mmengine - INFO - Epoch(train) [39][50/72]  lr: 1.1890e-03  eta: 0:01:25  time: 0.1087  data_time: 0.0373  memory: 530  loss: 0.2066
+2023/02/05 00:45:10 - mmengine - INFO - Epoch(train) [39][60/72]  lr: 1.1890e-03  eta: 0:01:24  time: 0.1038  data_time: 0.0319  memory: 530  loss: 0.1679
+2023/02/05 00:45:11 - mmengine - INFO - Epoch(train) [39][70/72]  lr: 1.1890e-03  eta: 0:01:23  time: 0.1004  data_time: 0.0366  memory: 530  loss: 0.2386
+2023/02/05 00:45:11 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:45:13 - mmengine - INFO - Epoch(train) [40][10/72]  lr: 1.1890e-03  eta: 0:01:22  time: 0.1044  data_time: 0.0316  memory: 530  loss: 0.1793
+2023/02/05 00:45:14 - mmengine - INFO - Epoch(train) [40][20/72]  lr: 1.1890e-03  eta: 0:01:21  time: 0.1045  data_time: 0.0313  memory: 530  loss: 0.2484
+2023/02/05 00:45:15 - mmengine - INFO - Epoch(train) [40][30/72]  lr: 1.1890e-03  eta: 0:01:20  time: 0.0956  data_time: 0.0287  memory: 530  loss: 0.2171
+2023/02/05 00:45:15 - mmengine - INFO - Epoch(train) [40][40/72]  lr: 1.1890e-03  eta: 0:01:18  time: 0.0953  data_time: 0.0282  memory: 530  loss: 0.2234
+2023/02/05 00:45:16 - mmengine - INFO - Epoch(train) [40][50/72]  lr: 1.1890e-03  eta: 0:01:17  time: 0.0995  data_time: 0.0329  memory: 530  loss: 0.2769
+2023/02/05 00:45:17 - mmengine - INFO - Epoch(train) [40][60/72]  lr: 1.1890e-03  eta: 0:01:16  time: 0.0997  data_time: 0.0351  memory: 530  loss: 0.1807
+2023/02/05 00:45:18 - mmengine - INFO - Epoch(train) [40][70/72]  lr: 1.1890e-03  eta: 0:01:15  time: 0.1018  data_time: 0.0290  memory: 530  loss: 0.1779
+2023/02/05 00:45:19 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:45:19 - mmengine - INFO - Saving checkpoint at 40 epochs
+2023/02/05 00:45:20 - mmengine - INFO - Epoch(val) [40][10/18]    eta: 0:00:00  time: 0.0545  data_time: 0.0344  memory: 530  
+2023/02/05 00:45:20 - mmengine - INFO - Epoch(val) [40][18/18]  accuracy/top1: 88.8112
+2023/02/05 00:45:21 - mmengine - INFO - Epoch(train) [41][10/72]  lr: 1.1569e-03  eta: 0:01:14  time: 0.1100  data_time: 0.0437  memory: 530  loss: 0.2490
+2023/02/05 00:45:22 - mmengine - INFO - Epoch(train) [41][20/72]  lr: 1.1569e-03  eta: 0:01:13  time: 0.0965  data_time: 0.0308  memory: 530  loss: 0.2325
+2023/02/05 00:45:23 - mmengine - INFO - Epoch(train) [41][30/72]  lr: 1.1569e-03  eta: 0:01:12  time: 0.0985  data_time: 0.0341  memory: 530  loss: 0.1923
+2023/02/05 00:45:24 - mmengine - INFO - Epoch(train) [41][40/72]  lr: 1.1569e-03  eta: 0:01:11  time: 0.0988  data_time: 0.0319  memory: 530  loss: 0.1450
+2023/02/05 00:45:25 - mmengine - INFO - Epoch(train) [41][50/72]  lr: 1.1569e-03  eta: 0:01:10  time: 0.0875  data_time: 0.0229  memory: 530  loss: 0.2189
+2023/02/05 00:45:26 - mmengine - INFO - Epoch(train) [41][60/72]  lr: 1.1569e-03  eta: 0:01:09  time: 0.0986  data_time: 0.0290  memory: 530  loss: 0.1865
+2023/02/05 00:45:27 - mmengine - INFO - Epoch(train) [41][70/72]  lr: 1.1569e-03  eta: 0:01:08  time: 0.0928  data_time: 0.0281  memory: 530  loss: 0.1575
+2023/02/05 00:45:27 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:45:28 - mmengine - INFO - Epoch(train) [42][10/72]  lr: 1.1569e-03  eta: 0:01:06  time: 0.1057  data_time: 0.0398  memory: 530  loss: 0.2235
+2023/02/05 00:45:29 - mmengine - INFO - Epoch(train) [42][20/72]  lr: 1.1569e-03  eta: 0:01:05  time: 0.0958  data_time: 0.0345  memory: 530  loss: 0.2074
+2023/02/05 00:45:30 - mmengine - INFO - Epoch(train) [42][30/72]  lr: 1.1569e-03  eta: 0:01:04  time: 0.0993  data_time: 0.0318  memory: 530  loss: 0.2995
+2023/02/05 00:45:31 - mmengine - INFO - Epoch(train) [42][40/72]  lr: 1.1569e-03  eta: 0:01:03  time: 0.0944  data_time: 0.0287  memory: 530  loss: 0.2043
+2023/02/05 00:45:32 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:45:32 - mmengine - INFO - Epoch(train) [42][50/72]  lr: 1.1569e-03  eta: 0:01:02  time: 0.0950  data_time: 0.0321  memory: 530  loss: 0.1924
+2023/02/05 00:45:33 - mmengine - INFO - Epoch(train) [42][60/72]  lr: 1.1569e-03  eta: 0:01:01  time: 0.0960  data_time: 0.0302  memory: 530  loss: 0.2070
+2023/02/05 00:45:34 - mmengine - INFO - Epoch(train) [42][70/72]  lr: 1.1569e-03  eta: 0:01:00  time: 0.1014  data_time: 0.0347  memory: 530  loss: 0.2223
+2023/02/05 00:45:34 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:45:35 - mmengine - INFO - Epoch(train) [43][10/72]  lr: 1.1256e-03  eta: 0:00:59  time: 0.1069  data_time: 0.0410  memory: 530  loss: 0.2920
+2023/02/05 00:45:36 - mmengine - INFO - Epoch(train) [43][20/72]  lr: 1.1256e-03  eta: 0:00:58  time: 0.0939  data_time: 0.0320  memory: 530  loss: 0.2642
+2023/02/05 00:45:37 - mmengine - INFO - Epoch(train) [43][30/72]  lr: 1.1256e-03  eta: 0:00:57  time: 0.0972  data_time: 0.0267  memory: 530  loss: 0.2001
+2023/02/05 00:45:38 - mmengine - INFO - Epoch(train) [43][40/72]  lr: 1.1256e-03  eta: 0:00:56  time: 0.1040  data_time: 0.0334  memory: 530  loss: 0.1997
+2023/02/05 00:45:39 - mmengine - INFO - Epoch(train) [43][50/72]  lr: 1.1256e-03  eta: 0:00:54  time: 0.0908  data_time: 0.0247  memory: 530  loss: 0.2138
+2023/02/05 00:45:40 - mmengine - INFO - Epoch(train) [43][60/72]  lr: 1.1256e-03  eta: 0:00:53  time: 0.0984  data_time: 0.0290  memory: 530  loss: 0.1684
+2023/02/05 00:45:41 - mmengine - INFO - Epoch(train) [43][70/72]  lr: 1.1256e-03  eta: 0:00:52  time: 0.0970  data_time: 0.0302  memory: 530  loss: 0.2800
+2023/02/05 00:45:41 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:45:42 - mmengine - INFO - Epoch(train) [44][10/72]  lr: 1.1256e-03  eta: 0:00:51  time: 0.1093  data_time: 0.0434  memory: 530  loss: 0.2537
+2023/02/05 00:45:43 - mmengine - INFO - Epoch(train) [44][20/72]  lr: 1.1256e-03  eta: 0:00:50  time: 0.1025  data_time: 0.0333  memory: 530  loss: 0.1870
+2023/02/05 00:45:44 - mmengine - INFO - Epoch(train) [44][30/72]  lr: 1.1256e-03  eta: 0:00:49  time: 0.0975  data_time: 0.0317  memory: 530  loss: 0.2194
+2023/02/05 00:45:45 - mmengine - INFO - Epoch(train) [44][40/72]  lr: 1.1256e-03  eta: 0:00:48  time: 0.0969  data_time: 0.0311  memory: 530  loss: 0.1899
+2023/02/05 00:45:46 - mmengine - INFO - Epoch(train) [44][50/72]  lr: 1.1256e-03  eta: 0:00:47  time: 0.1045  data_time: 0.0344  memory: 530  loss: 0.1956
+2023/02/05 00:45:47 - mmengine - INFO - Epoch(train) [44][60/72]  lr: 1.1256e-03  eta: 0:00:46  time: 0.0944  data_time: 0.0282  memory: 530  loss: 0.2166
+2023/02/05 00:45:48 - mmengine - INFO - Epoch(train) [44][70/72]  lr: 1.1256e-03  eta: 0:00:45  time: 0.0982  data_time: 0.0309  memory: 530  loss: 0.2348
+2023/02/05 00:45:48 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:45:49 - mmengine - INFO - Epoch(train) [45][10/72]  lr: 1.0952e-03  eta: 0:00:44  time: 0.1069  data_time: 0.0398  memory: 530  loss: 0.2793
+2023/02/05 00:45:50 - mmengine - INFO - Epoch(train) [45][20/72]  lr: 1.0952e-03  eta: 0:00:42  time: 0.0999  data_time: 0.0348  memory: 530  loss: 0.1776
+2023/02/05 00:45:51 - mmengine - INFO - Epoch(train) [45][30/72]  lr: 1.0952e-03  eta: 0:00:41  time: 0.0929  data_time: 0.0276  memory: 530  loss: 0.1981
+2023/02/05 00:45:52 - mmengine - INFO - Epoch(train) [45][40/72]  lr: 1.0952e-03  eta: 0:00:40  time: 0.1002  data_time: 0.0347  memory: 530  loss: 0.1948
+2023/02/05 00:45:53 - mmengine - INFO - Epoch(train) [45][50/72]  lr: 1.0952e-03  eta: 0:00:39  time: 0.1034  data_time: 0.0360  memory: 530  loss: 0.2423
+2023/02/05 00:45:54 - mmengine - INFO - Epoch(train) [45][60/72]  lr: 1.0952e-03  eta: 0:00:38  time: 0.0966  data_time: 0.0304  memory: 530  loss: 0.1619
+2023/02/05 00:45:55 - mmengine - INFO - Epoch(train) [45][70/72]  lr: 1.0952e-03  eta: 0:00:37  time: 0.0980  data_time: 0.0323  memory: 530  loss: 0.2544
+2023/02/05 00:45:55 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:45:56 - mmengine - INFO - Epoch(val) [45][10/18]    eta: 0:00:00  time: 0.0541  data_time: 0.0363  memory: 530  
+2023/02/05 00:45:56 - mmengine - INFO - Epoch(val) [45][18/18]  accuracy/top1: 93.3566
+2023/02/05 00:45:57 - mmengine - INFO - Epoch(train) [46][10/72]  lr: 1.0952e-03  eta: 0:00:36  time: 0.1119  data_time: 0.0417  memory: 530  loss: 0.2398
+2023/02/05 00:45:58 - mmengine - INFO - Epoch(train) [46][20/72]  lr: 1.0952e-03  eta: 0:00:35  time: 0.1005  data_time: 0.0317  memory: 530  loss: 0.2253
+2023/02/05 00:45:59 - mmengine - INFO - Epoch(train) [46][30/72]  lr: 1.0952e-03  eta: 0:00:34  time: 0.0995  data_time: 0.0326  memory: 530  loss: 0.2440
+2023/02/05 00:46:00 - mmengine - INFO - Epoch(train) [46][40/72]  lr: 1.0952e-03  eta: 0:00:33  time: 0.1046  data_time: 0.0367  memory: 530  loss: 0.2505
+2023/02/05 00:46:01 - mmengine - INFO - Epoch(train) [46][50/72]  lr: 1.0952e-03  eta: 0:00:32  time: 0.1034  data_time: 0.0314  memory: 530  loss: 0.2437
+2023/02/05 00:46:02 - mmengine - INFO - Epoch(train) [46][60/72]  lr: 1.0952e-03  eta: 0:00:31  time: 0.0952  data_time: 0.0288  memory: 530  loss: 0.1975
+2023/02/05 00:46:03 - mmengine - INFO - Epoch(train) [46][70/72]  lr: 1.0952e-03  eta: 0:00:30  time: 0.1049  data_time: 0.0397  memory: 530  loss: 0.2332
+2023/02/05 00:46:04 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:46:05 - mmengine - INFO - Epoch(train) [47][10/72]  lr: 1.0657e-03  eta: 0:00:28  time: 0.1072  data_time: 0.0410  memory: 530  loss: 0.1852
+2023/02/05 00:46:06 - mmengine - INFO - Epoch(train) [47][20/72]  lr: 1.0657e-03  eta: 0:00:27  time: 0.1030  data_time: 0.0326  memory: 530  loss: 0.2593
+2023/02/05 00:46:07 - mmengine - INFO - Epoch(train) [47][30/72]  lr: 1.0657e-03  eta: 0:00:26  time: 0.1033  data_time: 0.0329  memory: 530  loss: 0.2546
+2023/02/05 00:46:08 - mmengine - INFO - Epoch(train) [47][40/72]  lr: 1.0657e-03  eta: 0:00:25  time: 0.0936  data_time: 0.0258  memory: 530  loss: 0.1842
+2023/02/05 00:46:09 - mmengine - INFO - Epoch(train) [47][50/72]  lr: 1.0657e-03  eta: 0:00:24  time: 0.1037  data_time: 0.0358  memory: 530  loss: 0.1820
+2023/02/05 00:46:10 - mmengine - INFO - Epoch(train) [47][60/72]  lr: 1.0657e-03  eta: 0:00:23  time: 0.0995  data_time: 0.0302  memory: 530  loss: 0.2121
+2023/02/05 00:46:11 - mmengine - INFO - Epoch(train) [47][70/72]  lr: 1.0657e-03  eta: 0:00:22  time: 0.0953  data_time: 0.0286  memory: 530  loss: 0.2353
+2023/02/05 00:46:11 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:46:12 - mmengine - INFO - Epoch(train) [48][10/72]  lr: 1.0657e-03  eta: 0:00:21  time: 0.1156  data_time: 0.0466  memory: 530  loss: 0.2130
+2023/02/05 00:46:13 - mmengine - INFO - Epoch(train) [48][20/72]  lr: 1.0657e-03  eta: 0:00:20  time: 0.0986  data_time: 0.0302  memory: 530  loss: 0.2234
+2023/02/05 00:46:14 - mmengine - INFO - Epoch(train) [48][30/72]  lr: 1.0657e-03  eta: 0:00:19  time: 0.0968  data_time: 0.0291  memory: 530  loss: 0.2152
+2023/02/05 00:46:15 - mmengine - INFO - Epoch(train) [48][40/72]  lr: 1.0657e-03  eta: 0:00:18  time: 0.1038  data_time: 0.0346  memory: 530  loss: 0.2329
+2023/02/05 00:46:16 - mmengine - INFO - Epoch(train) [48][50/72]  lr: 1.0657e-03  eta: 0:00:17  time: 0.1053  data_time: 0.0337  memory: 530  loss: 0.1152
+2023/02/05 00:46:17 - mmengine - INFO - Epoch(train) [48][60/72]  lr: 1.0657e-03  eta: 0:00:16  time: 0.0944  data_time: 0.0265  memory: 530  loss: 0.1763
+2023/02/05 00:46:18 - mmengine - INFO - Epoch(train) [48][70/72]  lr: 1.0657e-03  eta: 0:00:15  time: 0.0974  data_time: 0.0326  memory: 530  loss: 0.2004
+2023/02/05 00:46:18 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:46:19 - mmengine - INFO - Epoch(train) [49][10/72]  lr: 1.0369e-03  eta: 0:00:13  time: 0.1099  data_time: 0.0416  memory: 530  loss: 0.2010
+2023/02/05 00:46:20 - mmengine - INFO - Epoch(train) [49][20/72]  lr: 1.0369e-03  eta: 0:00:12  time: 0.1042  data_time: 0.0335  memory: 530  loss: 0.1892
+2023/02/05 00:46:21 - mmengine - INFO - Epoch(train) [49][30/72]  lr: 1.0369e-03  eta: 0:00:11  time: 0.1042  data_time: 0.0343  memory: 530  loss: 0.1665
+2023/02/05 00:46:22 - mmengine - INFO - Epoch(train) [49][40/72]  lr: 1.0369e-03  eta: 0:00:10  time: 0.1027  data_time: 0.0338  memory: 530  loss: 0.2348
+2023/02/05 00:46:23 - mmengine - INFO - Epoch(train) [49][50/72]  lr: 1.0369e-03  eta: 0:00:09  time: 0.0996  data_time: 0.0337  memory: 530  loss: 0.1677
+2023/02/05 00:46:24 - mmengine - INFO - Epoch(train) [49][60/72]  lr: 1.0369e-03  eta: 0:00:08  time: 0.1017  data_time: 0.0290  memory: 530  loss: 0.1933
+2023/02/05 00:46:25 - mmengine - INFO - Epoch(train) [49][70/72]  lr: 1.0369e-03  eta: 0:00:07  time: 0.1002  data_time: 0.0302  memory: 530  loss: 0.1716
+2023/02/05 00:46:25 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:46:26 - mmengine - INFO - Epoch(train) [50][10/72]  lr: 1.0369e-03  eta: 0:00:06  time: 0.1097  data_time: 0.0422  memory: 530  loss: 0.1685
+2023/02/05 00:46:27 - mmengine - INFO - Epoch(train) [50][20/72]  lr: 1.0369e-03  eta: 0:00:05  time: 0.1021  data_time: 0.0352  memory: 530  loss: 0.2129
+2023/02/05 00:46:28 - mmengine - INFO - Epoch(train) [50][30/72]  lr: 1.0369e-03  eta: 0:00:04  time: 0.0956  data_time: 0.0271  memory: 530  loss: 0.1876
+2023/02/05 00:46:29 - mmengine - INFO - Epoch(train) [50][40/72]  lr: 1.0369e-03  eta: 0:00:03  time: 0.0987  data_time: 0.0286  memory: 530  loss: 0.1597
+2023/02/05 00:46:30 - mmengine - INFO - Epoch(train) [50][50/72]  lr: 1.0369e-03  eta: 0:00:02  time: 0.0981  data_time: 0.0338  memory: 530  loss: 0.1519
+2023/02/05 00:46:31 - mmengine - INFO - Epoch(train) [50][60/72]  lr: 1.0369e-03  eta: 0:00:01  time: 0.1008  data_time: 0.0327  memory: 530  loss: 0.1715
+2023/02/05 00:46:32 - mmengine - INFO - Epoch(train) [50][70/72]  lr: 1.0369e-03  eta: 0:00:00  time: 0.1060  data_time: 0.0367  memory: 530  loss: 0.2248
+2023/02/05 00:46:33 - mmengine - INFO - Exp name: mobilenet-v3-small-flowers_20230205_003954
+2023/02/05 00:46:33 - mmengine - INFO - Saving checkpoint at 50 epochs
+2023/02/05 00:46:34 - mmengine - INFO - Epoch(val) [50][10/18]    eta: 0:00:00  time: 0.0535  data_time: 0.0329  memory: 530  
+2023/02/05 00:46:34 - mmengine - INFO - Epoch(val) [50][18/18]  accuracy/top1: 93.8811
